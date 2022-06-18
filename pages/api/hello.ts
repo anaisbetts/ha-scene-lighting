@@ -1,28 +1,31 @@
-import type { NextApiRequest, NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from 'next'
 
-import { Axios } from "axios";
+import { Axios } from 'axios'
 
 import {
   createLongLivedTokenAuth,
   createConnection,
-} from "home-assistant-js-websocket";
+} from 'home-assistant-js-websocket'
 
 import {
   getHAStates,
   getHASceneDetails,
   getSceneList,
-} from "../../lib/home-assistant-api";
+} from '../../lib/home-assistant-api'
 
-const wnd: any = globalThis;
-wnd.WebSocket = require("ws");
+const wnd: any = globalThis
+wnd.WebSocket = require('ws')
 
-const [homeAssistantUrl, homeAssistantToken] = [process.env.HA_BASE_URL!, process.env.HA_TOKEN!]
+const [homeAssistantUrl, homeAssistantToken] = [
+  process.env.HA_BASE_URL!,
+  process.env.HA_TOKEN!,
+]
 
 async function doIt() {
-  const auth = createLongLivedTokenAuth(homeAssistantUrl, homeAssistantToken);
+  const auth = createLongLivedTokenAuth(homeAssistantUrl, homeAssistantToken)
 
-  const conn = await createConnection({ auth });
-  await conn.ping();
+  const conn = await createConnection({ auth })
+  await conn.ping()
 }
 
 /*
@@ -33,8 +36,8 @@ doIt().then(
 */
 
 type Data = {
-  name: string;
-};
+  name: string
+}
 
 export default async function handler(
   _req: NextApiRequest,
@@ -44,12 +47,12 @@ export default async function handler(
     baseURL: `${homeAssistantUrl}/api`,
     headers: {
       Authorization: `Bearer ${homeAssistantToken}`,
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
-  });
+  })
 
-  const output = await getSceneList(api);
+  const output = await getSceneList(api)
   //const details = await getHASceneDetails(output[1], api);
 
-  res.status(200).end(JSON.stringify(output, null, 4));
+  res.status(200).end(JSON.stringify(output, null, 4))
 }
