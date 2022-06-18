@@ -1,6 +1,8 @@
 import { Axios } from "axios";
 import { asyncMap } from "./promise-extras";
 
+const d = require('debug')('ha-api');
+
 export type HAAttributeList = Record<string, any>;
 
 export interface HAState {
@@ -42,8 +44,8 @@ export function HAStateToFriendlyEntity(state: HAState): FriendlyEntity {
   const internalIdObj =
     "id" in state.attributes ? { internalId: state.attributes.id } : {};
 
-  console.log(`${state.entity_id} => ${state.attributes.id}`);
-  console.log(JSON.stringify(internalIdObj));
+  d(`${state.entity_id} => ${state.attributes.id}`);
+  d(JSON.stringify(internalIdObj));
   return {
     entity: state.entity_id,
     name: state.attributes.friendly_name || state.entity_id,
@@ -68,7 +70,7 @@ export async function getHAStates(api: Axios) {
 }
 
 export async function getHASceneDetails(scene: FriendlyEntity, api: Axios) {
-  console.log(scene.internalId);
+  d(scene.internalId);
   const res = await api.get(`/config/scene/config/${scene.internalId}`);
   return JSON.parse(res.data) as HASceneDetails;
 }
@@ -105,8 +107,6 @@ export async function getSceneList(api: Axios) {
           HAStateToFriendlyEntity(entityTable[id]),
           sceneTable[x.entity_id]
         );
-
-        console.log(acc[id]);
 
         return acc;
       }, {} as Record<string, FriendlyStateEntity>),
