@@ -4,6 +4,7 @@ import { Disclosure, Menu, Transition } from '@headlessui/react'
 export interface ShellProps {}
 
 export default function Shell({ children }: PropsWithChildren<ShellProps>) {
+
   return (
     <>
       <div
