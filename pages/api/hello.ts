@@ -7,7 +7,6 @@ import {
   createConnection,
 } from "home-assistant-js-websocket";
 
-import { homeAssistantUrl, homeAssistantToken } from "./credentials";
 import {
   getHAStates,
   getHASceneDetails,
@@ -16,6 +15,8 @@ import {
 
 const wnd: any = globalThis;
 wnd.WebSocket = require("ws");
+
+const [homeAssistantUrl, homeAssistantToken] = [process.env.HA_BASE_URL!, process.env.HA_TOKEN!]
 
 async function doIt() {
   const auth = createLongLivedTokenAuth(homeAssistantUrl, homeAssistantToken);
