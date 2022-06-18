@@ -1,11 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
+import { Axios } from "axios";
+
 import {
   createLongLivedTokenAuth,
   createConnection,
 } from "home-assistant-js-websocket";
 
 import { homeAssistantUrl, homeAssistantToken } from "./credentials";
+import { getSceneList } from "../../lib/home-assistant-api";
 
 const wnd: any = globalThis;
 wnd.WebSocket = require("ws");
@@ -17,18 +20,30 @@ async function doIt() {
   await conn.ping();
 }
 
+/*
 doIt().then(
   (_) => console.log("It worked!"),
   (e) => console.error(`oh geez: ${e.message}`, e)
 );
+*/
 
 type Data = {
   name: string;
 };
 
-export default function handler(
-  req: NextApiRequest,
+export default async function handler(
+  _req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
-  res.status(200).json({ name: "John Doe" });
+  const api = new Axios({
+    baseURL: `${homeAssistantUrl}/api`,
+    headers: {
+      Authorization: `Bearer ${homeAssistantToken}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  const output = await getSceneList(api);
+
+  res.status(200).end(JSON.stringify(output, null, 4));
 }
