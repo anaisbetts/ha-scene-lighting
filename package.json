@@ -10,6 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@headlessui/react": "^1.6.4",
     "@types/ws": "^8.5.3",
     "axios": "^0.27.2",
     "debug": "^4.3.4",
