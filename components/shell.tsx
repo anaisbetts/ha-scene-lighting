@@ -4,7 +4,6 @@ import { Disclosure, Menu, Transition } from '@headlessui/react'
 export interface ShellProps {}
 
 export default function Shell({ children }: PropsWithChildren<ShellProps>) {
-
   return (
     <>
       <div
@@ -24,7 +23,7 @@ export default function Shell({ children }: PropsWithChildren<ShellProps>) {
         </main>
 
         <footer className="bg-yellow-400">
-          <p>it's an app</p>
+          <p>its an app</p>
         </footer>
       </div>
     </>
