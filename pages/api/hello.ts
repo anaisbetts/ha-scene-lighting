@@ -8,7 +8,11 @@ import {
 } from "home-assistant-js-websocket";
 
 import { homeAssistantUrl, homeAssistantToken } from "./credentials";
-import { getSceneList } from "../../lib/home-assistant-api";
+import {
+  getHAStates,
+  getHASceneDetails,
+  getSceneList,
+} from "../../lib/home-assistant-api";
 
 const wnd: any = globalThis;
 wnd.WebSocket = require("ws");
@@ -44,6 +48,7 @@ export default async function handler(
   });
 
   const output = await getSceneList(api);
+  //const details = await getHASceneDetails(output[1], api);
 
   res.status(200).end(JSON.stringify(output, null, 4));
 }
