@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint && prettier --write **/*.{ts,tsx}"
+    "lint": "next lint && prettier --write **/*.{ts,tsx}",
+    "test": "jest"
   },
   "dependencies": {
     "@types/ws": "^8.5.3",
