@@ -133,6 +133,12 @@ image:
 ##
 ## Learn more at 'https://www.gitpod.io/docs/prebuilds'
 
+tasks:
+  - init: |
+      npm install
+  - command: |
+      npm run dev
+
 github:
   prebuilds:
     # enable for the default branch
