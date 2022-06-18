@@ -11,6 +11,8 @@ import {
   getHAStates,
   getHASceneDetails,
   getSceneList,
+  createApiHandler,
+  Scene,
 } from '../../lib/home-assistant-api'
 
 const wnd: any = globalThis
@@ -35,24 +37,11 @@ doIt().then(
 );
 */
 
-type Data = {
-  name: string
-}
-
 export default async function handler(
   _req: NextApiRequest,
-  res: NextApiResponse<Data>
+  res: NextApiResponse<Scene[]>
 ) {
-  const api = new Axios({
-    baseURL: `${homeAssistantUrl}/api`,
-    headers: {
-      Authorization: `Bearer ${homeAssistantToken}`,
-      'Content-Type': 'application/json',
-    },
-  })
+  const api = createApiHandler(homeAssistantUrl, homeAssistantToken)
 
-  const output = await getSceneList(api)
-  //const details = await getHASceneDetails(output[1], api);
-
-  res.status(200).end(JSON.stringify(output, null, 4))
+  res.status(200).json(await getSceneList(api))
 }

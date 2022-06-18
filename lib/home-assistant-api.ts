@@ -40,6 +40,19 @@ export interface Scene extends FriendlyEntity {
   affects: Record<string, FriendlyStateEntity>
 }
 
+export function createApiHandler(
+  homeAssistantUrl: string,
+  homeAssistantToken: string
+) {
+  return new Axios({
+    baseURL: `${homeAssistantUrl}/api`,
+    headers: {
+      Authorization: `Bearer ${homeAssistantToken}`,
+      'Content-Type': 'application/json',
+    },
+  })
+}
+
 export function HAStateToFriendlyEntity(state: HAState): FriendlyEntity {
   const internalIdObj =
     'id' in state.attributes ? { internalId: state.attributes.id } : {}
@@ -76,6 +89,7 @@ export async function getHASceneDetails(scene: FriendlyEntity, api: Axios) {
 }
 
 export async function getSceneList(api: Axios) {
+  console.log('Getting scene list!!')
   const result = await getHAStates(api)
 
   const entityTable = result.reduce((acc, x) => {
