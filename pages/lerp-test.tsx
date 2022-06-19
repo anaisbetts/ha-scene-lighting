@@ -4,7 +4,7 @@ import ListBox from '../components/list-box'
 import Shell from '../components/shell'
 import { useAction } from '../lib/actions/action'
 import {
-  createApiHandler,
+  createHAApiHandler,
   fetchLocalApi,
   getSceneList,
   Scene,
@@ -92,7 +92,10 @@ const LerpTest: NextPage<LerpTestProps> = ({ initialSceneList }) => {
 }
 
 LerpTest.getInitialProps = async () => {
-  const api = createApiHandler(process.env.HA_BASE_URL!, process.env.HA_TOKEN!)
+  const api = createHAApiHandler(
+    process.env.HA_BASE_URL!,
+    process.env.HA_TOKEN!
+  )
 
   return {
     initialSceneList: await getSceneList(api),

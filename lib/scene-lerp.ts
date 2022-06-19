@@ -71,15 +71,7 @@ export function lerpEntity(
   }
 }
 
-export function lerpScene(
-  from: Scene,
-  to: Scene,
-  t: number
-) /*: Record<string, FriendlyStateEntity>*/ {
-  // For each entity in "affects"...
-  // 	for each attribute in entity
-  // 		figure out a new value for the attribute
-
+export function lerpScene(from: Scene, to: Scene, t: number) {
   return Object.keys(from.affects).reduce((acc, entity) => {
     d(`Examining ${entity}`)
     if (!to.affects.hasOwnProperty(entity)) {
@@ -89,5 +81,5 @@ export function lerpScene(
 
     acc[entity] = lerpEntity(from.affects[entity], to.affects[entity], t)
     return acc
-  }, {} as Record<string, HAAttributeList>)
+  }, {} as Record<string, FriendlyStateEntity>)
 }

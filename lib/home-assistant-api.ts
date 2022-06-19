@@ -40,14 +40,16 @@ export interface Scene extends FriendlyEntity {
   affects: Record<string, FriendlyStateEntity>
 }
 
-export function createApiHandler(
-  homeAssistantUrl: string,
-  homeAssistantToken: string
-) {
+const [homeAssistantUrl, homeAssistantToken] = [
+  process.env.HA_BASE_URL!,
+  process.env.HA_TOKEN!,
+]
+
+export function createHAApiHandler(haUrl?: string, haToken?: string) {
   return new Axios({
-    baseURL: `${homeAssistantUrl}/api`,
+    baseURL: `${haUrl ?? homeAssistantUrl}/api`,
     headers: {
-      Authorization: `Bearer ${homeAssistantToken}`,
+      Authorization: `Bearer ${haToken ?? homeAssistantToken}`,
       'Content-Type': 'application/json',
     },
   })
@@ -110,7 +112,6 @@ export async function getSceneList(api: Axios) {
 
   return scenes.map((x) => {
     const affectsList: string[] = x.attributes.entity_id
-    const haScene = entityTable[x.entity_id]
 
     const ret: Scene = {
       entity: x.entity_id,
@@ -129,6 +130,7 @@ export async function getSceneList(api: Axios) {
     return ret
   })
 }
+
 export async function fetchLocalApi<T>(url: string): Promise<T> {
   const api = new Axios()
   const response = await api.get(url)

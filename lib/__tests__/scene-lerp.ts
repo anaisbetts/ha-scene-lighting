@@ -1,5 +1,12 @@
-import { lerpEntity } from '../scene-lerp'
-import { onOffTestFrom, onOffTestTo, testOneFrom, testOneTo } from '../mocks'
+import { lerpEntity, lerpScene } from '../scene-lerp'
+import {
+  onOffTestFrom,
+  onOffTestTo,
+  testOneFrom,
+  testOneSceneFrom,
+  testOneSceneTo,
+  testOneTo,
+} from '../mocks'
 
 describe('lerp-entity', () => {
   it('Can interpolate between two lights that are on', () => {
@@ -32,5 +39,14 @@ describe('lerp-entity', () => {
       console.log(ret.state.brightness)
       expect(ret.state.state).toBe('on')
     })
+  })
+})
+
+describe('lerpScene', () => {
+  it('Can interpolate between two test scenes at 50%', () => {
+    const ret = lerpScene(testOneSceneFrom, testOneSceneTo, 0.5)
+
+    console.log(JSON.stringify(ret, null, 2))
+    return
   })
 })
