@@ -89,7 +89,7 @@ export async function getHASceneDetails(scene: FriendlyEntity, api: Axios) {
 }
 
 export async function getSceneList(api: Axios) {
-  console.log('Getting scene list!!')
+  d('Getting scene list!!')
   const result = await getHAStates(api)
 
   const entityTable = result.reduce((acc, x) => {
@@ -119,7 +119,7 @@ export async function getSceneList(api: Axios) {
       affects: affectsList.reduce((acc, id) => {
         acc[id] = AddStateToEntity(
           HAStateToFriendlyEntity(entityTable[id]),
-          sceneTable[x.entity_id]
+          sceneTable[x.entity_id].entities[id]
         )
 
         return acc
