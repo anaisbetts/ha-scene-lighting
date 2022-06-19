@@ -120,11 +120,15 @@ image:
 ##
 ## Learn more at 'https://www.gitpod.io/docs/ides-and-editors/vscode'
 
-#vscode:
-#  extensions:
-#    - vscodevim.vim
-#    - esbenp.prettier-vscode@9.5.0
-#    - https://example.com/abc/releases/extension-0.26.0.vsix
+vscode:
+  extensions:
+    - esbenp.prettier-vscode
+    - dbaeumer.vscode-eslint
+    - GitHub.copilot
+    - wix.glean
+    - Orta.vscode-jest
+    - bradlc.vscode-tailwindcss
+    - austenc.tailwind-docs
 
 ## The 'github' section defines configuration of continuous prebuilds
 ## for GitHub repositories when the GitHub application
