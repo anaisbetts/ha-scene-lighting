@@ -20,15 +20,33 @@ function fillArray(len: number, n: number) {
   return Array.from({ length: len }, () => n)
 }
 
+export function defaultValueFromExample(example: any) {
+  if (typeof example === 'number') {
+    return defaultNumber
+  }
+
+  if (Array.isArray(example)) {
+    return fillArray(example.length, defaultNumber)
+  }
+
+  throw new Error(
+    `Don't know how to create default value for ${JSON.stringify(example)}`
+  )
+}
+
 export function lerp(from: any, to: any, t: number) {
   if (typeof from === 'number' || typeof to === 'number') {
-    return lerpNum(from ?? defaultNumber, to ?? defaultNumber, t)
+    return lerpNum(
+      from ?? defaultValueFromExample(to),
+      to ?? defaultValueFromExample(from),
+      t
+    )
   }
 
   if (Array.isArray(from) || Array.isArray(to)) {
     return lerpArray(
-      from ?? fillArray(to.length, defaultNumber),
-      to ?? fillArray(from.length, defaultNumber),
+      from ?? defaultValueFromExample(to),
+      to ?? defaultValueFromExample(from),
       t
     )
   }

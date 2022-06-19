@@ -3,37 +3,72 @@ import {
   HAAttributeList,
   Scene,
 } from './home-assistant-api'
+import { defaultValueFromExample, lerp } from './math'
 
 //const d = require('debug')('scene-lerp')
 const d = console.log.bind(console)
 
-export function clamp(min: number, n: number, max: number) {
-  return Math.max(min, Math.min(n, max))
-}
+// NB: Technically, we should actually care about this but it makes my code
+// like 100000x more complicated so I'm gonna try to ignore it as long as I
+// can. https://developers.home-assistant.io/docs/core/entity/light?_highlight=color&_highlight=mode#color-modes
+// has the details around this particular mess.
+const attributeIgnoreList = ['color_mode'].reduce((acc, x) => {
+  acc[x] = true
+  return acc
+}, {} as Record<string, boolean>)
 
-export function lerpNum(from: number, to: number, t: number) {
-  return (1 - t) * from + t * to
-}
+function dedupeIdenticalKeys(attributeKeys: string[]): string[] {
+  // Home Assistant stores the same attribute key in multiple formats - if we
+  // see the same ones throw out a few
+  let ret = [...attributeKeys]
 
-const attributeIgnoreList: string[] = []
+  const colorRe = /_color$/
+  if (attributeKeys.filter((x) => colorRe.test(x)).length > 1) {
+    ret = attributeKeys.filter((x) => !colorRe.test(x))
+    ret.push('rgb_color')
+  }
+
+  // Deduplicate keys as well as filter out ones in our blocklist
+  const dedup = ret.reduce((acc, x) => {
+    if (attributeIgnoreList[x]) return acc
+    acc[x] = true
+    return acc
+  }, {} as Record<string, boolean>)
+
+  return Object.keys(dedup)
+}
 
 export function lerpEntity(
   from: FriendlyStateEntity,
   to: FriendlyStateEntity,
   t: number
-) /*: HAAttributeList*/ {
+): FriendlyStateEntity {
   // Generate a list of attributes to mutate
-  // - Any attribute equal in both 'from' and 'to' are ignored
-  // - Any attribute that isn't in 'to' is ignored
-  const lerpedAttributes = Object.keys(from.state).filter((k) => {
-    if (JSON.stringify(from.state[k]) === JSON.stringify(to.state[k])) {
-      return false
-    }
+  const lerpedKeys = dedupeIdenticalKeys(
+    [...Object.keys(from.state), ...Object.keys(to.state)].filter((k) => {
+      if (JSON.stringify(from.state[k]) === JSON.stringify(to.state[k])) {
+        return false
+      }
 
-    return true
-  })
+      return true
+    })
+  )
 
-  d(`Keys to lerp: ${JSON.stringify(lerpedAttributes)}`)
+  d(`Keys to lerp: ${JSON.stringify(lerpedKeys)}`)
+  const state = lerpedKeys.reduce((acc, k) => {
+    let [fromVal, toVal] = [from.state[k], to.state[k]]
+
+    fromVal ??= defaultValueFromExample(toVal)
+    toVal ??= defaultValueFromExample(fromVal)
+
+    acc[k] = lerp(from.state[k], to.state[k], t)
+    return acc
+  }, {} as HAAttributeList)
+
+  return {
+    ...from,
+    state,
+  }
 }
 
 export function lerpScene(
@@ -45,13 +80,14 @@ export function lerpScene(
   // 	for each attribute in entity
   // 		figure out a new value for the attribute
 
-  Object.keys(from.affects).forEach((entity) => {
+  return Object.keys(from.affects).reduce((acc, entity) => {
     d(`Examining ${entity}`)
     if (!to.affects.hasOwnProperty(entity)) {
       d(`${entity} is in ${from.entity} but not ${to.entity}!`)
-      return
+      return acc
     }
 
-    lerpEntity(from.affects[entity], to.affects[entity], t)
-  })
+    acc[entity] = lerpEntity(from.affects[entity], to.affects[entity], t)
+    return acc
+  }, {} as Record<string, HAAttributeList>)
 }
