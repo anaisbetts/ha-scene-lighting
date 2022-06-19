@@ -129,3 +129,9 @@ export async function getSceneList(api: Axios) {
     return ret
   })
 }
+export async function fetchLocalApi<T>(url: string): Promise<T> {
+  const api = new Axios()
+  const response = await api.get(url)
+
+  return JSON.parse(response.data) as T
+}

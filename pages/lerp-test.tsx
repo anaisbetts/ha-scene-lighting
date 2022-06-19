@@ -6,9 +6,14 @@ import Shell from '../components/shell'
 import { useAction } from '../lib/actions/action'
 import {
   createApiHandler,
+  fetchLocalApi,
   getSceneList,
   Scene,
 } from '../lib/home-assistant-api'
+
+interface LerpTestProps {
+  initialSceneList: Scene[]
+}
 
 function SceneTile({ item }: { item: Scene }) {
   const affectsList = Object.keys(item.affects).map((id, n) => (
@@ -27,26 +32,11 @@ function SceneTile({ item }: { item: Scene }) {
   )
 }
 
-const [homeAssistantUrl, homeAssistantToken] = [
-  process.env.HA_BASE_URL!,
-  process.env.HA_TOKEN!,
-]
-
-interface LerpTestProps {
-  initialSceneList: Scene[]
-}
-
-async function fetchApi<T>(url: string): Promise<T> {
-  const api = new Axios()
-  const response = await api.get(url)
-
-  return JSON.parse(response.data) as T
-}
 
 const LerpTest: NextPage<LerpTestProps> = ({ initialSceneList }) => {
   const api = new Axios()
   const [_reload, content] = useAction(
-    () => fetchApi<Scene[]>('/api/hello'),
+    () => fetchLocalApi<Scene[]>('/api/hello'),
     [],
     true
   )
@@ -78,3 +68,4 @@ LerpTest.getInitialProps = async () => {
 }
 
 export default LerpTest
+
