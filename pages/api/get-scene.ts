@@ -1,27 +1,17 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import '../api-helper'
 
-import { Axios } from 'axios'
+import {
+  getSceneList,
+  createHAApiHandler,
+  Scene,
+} from '../../lib/home-assistant-api'
 
+/*
 import {
   createLongLivedTokenAuth,
   createConnection,
 } from 'home-assistant-js-websocket'
-
-import {
-  getHAStates,
-  getHASceneDetails,
-  getSceneList,
-  createApiHandler,
-  Scene,
-} from '../../lib/home-assistant-api'
-
-const wnd: any = globalThis
-wnd.WebSocket = require('ws')
-
-const [homeAssistantUrl, homeAssistantToken] = [
-  process.env.HA_BASE_URL!,
-  process.env.HA_TOKEN!,
-]
 
 async function doIt() {
   const auth = createLongLivedTokenAuth(homeAssistantUrl, homeAssistantToken)
@@ -30,7 +20,6 @@ async function doIt() {
   await conn.ping()
 }
 
-/*
 doIt().then(
   (_) => console.log("It worked!"),
   (e) => console.error(`oh geez: ${e.message}`, e)
@@ -41,7 +30,6 @@ export default async function handler(
   _req: NextApiRequest,
   res: NextApiResponse<Scene[]>
 ) {
-  const api = createApiHandler(homeAssistantUrl, homeAssistantToken)
-
+  const api = createHAApiHandler()
   res.status(200).json(await getSceneList(api))
 }

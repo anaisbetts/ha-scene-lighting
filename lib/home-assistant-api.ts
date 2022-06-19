@@ -137,3 +137,31 @@ export async function fetchLocalApi<T>(url: string): Promise<T> {
 
   return JSON.parse(response.data) as T
 }
+
+export interface CallServiceRequest {
+  domain: string
+  service: string
+  entityId: string
+  data: Record<string, any>
+}
+
+export async function callService(
+  domain: string,
+  service: string,
+  entityId: string,
+  data: Record<string, any>
+) {
+  const api = new Axios({ baseURL: '/' })
+  const rqData: CallServiceRequest = {
+    domain,
+    service,
+    entityId,
+    data,
+  }
+
+  const response = await api.post('api/call-service', JSON.stringify(rqData))
+  return JSON.parse(response.data)
+}
+
+const wnd: any = globalThis
+wnd.callService = callService
