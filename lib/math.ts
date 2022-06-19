@@ -13,3 +13,31 @@ export function lerpArray(from: number[], to: number[], t: number) {
 export function lerpState(from: string, to: string, t: number) {
   return t > 0.5 ? to : from
 }
+
+const defaultNumber = 0.0
+
+function fillArray(len: number, n: number) {
+  return Array.from({ length: len }, () => n)
+}
+
+export function lerp(from: any, to: any, t: number) {
+  if (typeof from === 'number' || typeof to === 'number') {
+    return lerpNum(from ?? defaultNumber, to ?? defaultNumber, t)
+  }
+
+  if (Array.isArray(from) || Array.isArray(to)) {
+    return lerpArray(
+      from ?? fillArray(to.length, defaultNumber),
+      to ?? fillArray(from.length, defaultNumber),
+      t
+    )
+  }
+
+  if (typeof from === 'string' && typeof to === 'string') {
+    return lerpState(from, to, t)
+  }
+
+  throw new Error(
+    `Failed to Lerp: ${JSON.stringify(from)} => ${JSON.stringify(to)}`
+  )
+}
