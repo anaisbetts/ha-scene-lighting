@@ -1,5 +1,4 @@
 import { NextPage } from 'next'
-import { Axios } from 'axios'
 
 import ListBox from '../components/list-box'
 import Shell from '../components/shell'
@@ -10,6 +9,10 @@ import {
   getSceneList,
   Scene,
 } from '../lib/home-assistant-api'
+import { Subject, throttleTime } from 'rxjs'
+import { useMemo, useRef, useState } from 'react'
+import { useObservable } from '../lib/actions/promise'
+import { lerpScene } from '../lib/scene-lerp'
 
 interface LerpTestProps {
   initialSceneList: Scene[]
@@ -32,9 +35,11 @@ function SceneTile({ item }: { item: Scene }) {
   )
 }
 
-
 const LerpTest: NextPage<LerpTestProps> = ({ initialSceneList }) => {
-  const api = new Axios()
+  const rangeSubj = useRef(new Subject<number>())
+  const [fromIdx, setFromIdx] = useState<number | undefined>()
+  const [toIdx, setToIdx] = useState<number | undefined>()
+
   const [_reload, content] = useAction(
     () => fetchLocalApi<Scene[]>('/api/hello'),
     [],
@@ -45,6 +50,22 @@ const LerpTest: NextPage<LerpTestProps> = ({ initialSceneList }) => {
     ? content.ok()! || initialSceneList
     : initialSceneList
 
+  const val = useObservable(() => rangeSubj.current.pipe(throttleTime(250)), [])
+
+  const lerpedSceneInfo = useMemo(() => {
+    if (
+      fromIdx === undefined ||
+      toIdx === undefined ||
+      val.ok() === undefined
+    ) {
+      return null
+    }
+
+    const from = scene[fromIdx]
+    const to = scene[toIdx]
+    lerpScene(from, to, val.ok()!)
+  }, [fromIdx, toIdx, val, val.ok(), scene])
+
   const sceneLbi = scene.map((x, n) => ({
     id: n,
     summary: x.name,
@@ -53,8 +74,19 @@ const LerpTest: NextPage<LerpTestProps> = ({ initialSceneList }) => {
 
   return (
     <Shell>
-      <ListBox items={sceneLbi} label="From" />
-      <ListBox items={sceneLbi} label="To" />
+      <ListBox items={sceneLbi} label="From" onItemSelect={setFromIdx} />
+      <ListBox items={sceneLbi} label="To" onItemSelect={setToIdx} />
+
+      <div>
+        <input
+          type="range"
+          min="0"
+          max="100"
+          disabled={fromIdx === undefined || toIdx === undefined}
+          onChange={(e) => rangeSubj.current.next(Number(e.target.value))}
+        />
+        <p>{val.ok()}</p>
+      </div>
     </Shell>
   )
 }
@@ -68,4 +100,3 @@ LerpTest.getInitialProps = async () => {
 }
 
 export default LerpTest
-

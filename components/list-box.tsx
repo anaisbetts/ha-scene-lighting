@@ -13,13 +13,20 @@ export interface ListBoxItem {
 export interface ListBoxProps {
   label: string
   items: ListBoxItem[]
+  onItemSelect: (id: number | undefined) => void
 }
 
-export default function ListBox({ items, label }: ListBoxProps) {
+export default function ListBox({ items, label, onItemSelect }: ListBoxProps) {
   const [selected, setSelected] = useState<ListBoxItem>()
 
   return (
-    <Listbox value={selected} onChange={setSelected}>
+    <Listbox
+      value={selected}
+      onChange={(v) => {
+        setSelected(v)
+        onItemSelect?.(v?.id)
+      }}
+    >
       {({ open }) => (
         <>
           <Listbox.Label className="block text-sm font-medium text-gray-700">
