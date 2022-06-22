@@ -1,3 +1,4 @@
+import { RenderStrategy } from '@headlessui/react/dist/utils/render'
 import {
   callService,
   FriendlyStateEntity,
@@ -67,6 +68,17 @@ export function lerpEntity(
     return acc
   }, {} as HAAttributeList)
 
+  // NB: If we somehow transition from a color temp setting <=> an RGB
+  // setting, we need to make sure we don't try to set both. If we do,
+  // Home Assistant will throw an error.
+  if (state.rgb_color && state.color_temp) {
+    if (to.state.color_temp) {
+      delete state.rgb_color
+    } else {
+      delete state.color_temp
+    }
+  }
+
   return {
     ...from,
     state,
@@ -86,6 +98,20 @@ export function lerpScene(from: Scene, to: Scene, t: number) {
   }, {} as Record<string, FriendlyStateEntity>)
 }
 
+const ignoredStateKeys = ['state'].reduce((acc, x) => {
+  acc[x] = true
+  return acc
+}, {} as Record<string, boolean>)
+
+function filterIgnoredStateKeys(state: HAAttributeList) {
+  return Object.keys(state).reduce((acc, k) => {
+    if (ignoredStateKeys[k]) return acc
+
+    acc[k] = state[k]
+    return acc
+  }, {} as HAAttributeList)
+}
+
 export async function applySceneTransition(
   toSet: Record<string, FriendlyStateEntity>
 ) {
@@ -101,7 +127,12 @@ export async function applySceneTransition(
         await callService('light', 'turn_off', x.entity, {})
         return
       } else {
-        await callService('light', 'turn_on', x.entity, x.state)
+        await callService(
+          'light',
+          'turn_on',
+          x.entity,
+          filterIgnoredStateKeys(x.state)
+        )
       }
     },
     4 /* at a time */

@@ -159,8 +159,8 @@ export async function callService(
     data,
   }
 
-  const response = await api.post('api/call-service', JSON.stringify(rqData))
-  return JSON.parse(response.data)
+  const response = await api.post('api/call-service', rqData)
+  return response.data
 }
 
 const wnd: any = globalThis

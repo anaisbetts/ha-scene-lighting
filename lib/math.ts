@@ -2,8 +2,9 @@ export function clamp(min: number, n: number, max: number) {
   return Math.max(min, Math.min(n, max))
 }
 
-export function lerpNum(from: number, to: number, t: number) {
-  return (1 - t) * from + t * to
+export function lerpNum(from: number, to: number, t: number, asInt = true) {
+  const ret = (1 - t) * from + t * to
+  return asInt ? Math.floor(ret) : ret
 }
 
 export function lerpArray(from: number[], to: number[], t: number) {

@@ -11,8 +11,9 @@ import {
 } from '../lib/home-assistant-api'
 import { Subject, throttleTime } from 'rxjs'
 import { useMemo, useRef, useState } from 'react'
-import { useObservable } from '../lib/actions/promise'
-import { lerpScene } from '../lib/scene-lerp'
+import { useObservable, usePromise } from '../lib/actions/promise'
+import { applySceneTransition, lerpScene } from '../lib/scene-lerp'
+import { clamp } from '../lib/math'
 
 interface LerpTestProps {
   initialSceneList: Scene[]
@@ -62,8 +63,17 @@ const LerpTest: NextPage<LerpTestProps> = ({ initialSceneList }) => {
 
     const from = scene[fromIdx]
     const to = scene[toIdx]
-    lerpScene(from, to, val.ok()!)
+
+    return lerpScene(from, to, clamp(0, val.ok()! / 100, 1))
   }, [fromIdx, toIdx, val, val.ok(), scene])
+
+  usePromise(async () => {
+    if (!lerpedSceneInfo) {
+      return null
+    }
+
+    await applySceneTransition(lerpedSceneInfo)
+  }, [lerpedSceneInfo])
 
   const sceneLbi = scene.map((x, n) => ({
     id: n,
