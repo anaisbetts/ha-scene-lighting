@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import '../api-helper'
+import '../../lib/api-helper'
 
 import {
   getSceneList,
