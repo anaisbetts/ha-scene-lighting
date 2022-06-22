@@ -14,11 +14,7 @@ describe('lerp-entity', () => {
     expect(ret.entity).toBe(testOneFrom.entity)
     expect(ret.entity).toBe(testOneTo.entity)
 
-    expect(ret.state.brightness).toBeCloseTo((89 + 250) / 2)
-    expect(ret.state.rgb_color[0]).toBe(255)
-    expect(ret.state.rgb_color[1]).toBeCloseTo((163 + 230) / 2)
-    expect(ret.state.rgb_color[2]).toBeCloseTo((80 + 209) / 2)
-
+    expect(ret.state.brightness).toBeCloseTo(Math.floor((89 + 250) / 2))
     expect(ret.state.color_temp).toBeCloseTo((382 + 196) / 2)
   })
 
