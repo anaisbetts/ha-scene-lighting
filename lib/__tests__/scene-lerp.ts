@@ -36,7 +36,6 @@ describe('lerp-entity', () => {
 
     inp.forEach((t) => {
       const ret = lerpEntity(onOffTestFrom, onOffTestTo, t)
-      console.log(ret.state.brightness)
       expect(ret.state.state).toBe('on')
     })
   })

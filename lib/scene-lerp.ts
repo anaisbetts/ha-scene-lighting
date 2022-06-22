@@ -1,9 +1,11 @@
 import {
+  callService,
   FriendlyStateEntity,
   HAAttributeList,
   Scene,
 } from './home-assistant-api'
 import { defaultValueFromExample, lerp } from './math'
+import { asyncMap } from './promise-extras'
 
 //const d = require('debug')('scene-lerp')
 const d = console.log.bind(console)
@@ -82,4 +84,26 @@ export function lerpScene(from: Scene, to: Scene, t: number) {
     acc[entity] = lerpEntity(from.affects[entity], to.affects[entity], t)
     return acc
   }, {} as Record<string, FriendlyStateEntity>)
+}
+
+export async function applySceneTransition(
+  toSet: Record<string, FriendlyStateEntity>
+) {
+  await asyncMap(
+    Object.values(toSet),
+    async (x) => {
+      // NB: Right now we can only deal with lights
+      if (!x.entity.startsWith('light.')) {
+        return null
+      }
+
+      if (x.state.state === 'off') {
+        await callService('light', 'turn_off', x.entity, {})
+        return
+      } else {
+        await callService('light', 'turn_on', x.entity, x.state)
+      }
+    },
+    4 /* at a time */
+  )
 }

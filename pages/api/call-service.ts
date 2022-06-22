@@ -34,7 +34,7 @@ export default async function handler(
   const api = createHAApiHandler()
   const haResp = await haCallService(
     api,
-    JSON.parse(req.body) as CallServiceRequest
+    req.body as CallServiceRequest
   )
 
   res.status(haResp.status).end(haResp.data)

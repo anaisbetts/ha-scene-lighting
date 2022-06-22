@@ -41,9 +41,8 @@ const LerpTest: NextPage<LerpTestProps> = ({ initialSceneList }) => {
   const [toIdx, setToIdx] = useState<number | undefined>()
 
   const [_reload, content] = useAction(
-    () => fetchLocalApi<Scene[]>('/api/hello'),
-    [],
-    true
+    () => fetchLocalApi<Scene[]>('/api/get-scene'),
+    []
   )
 
   const scene = content.isOk()

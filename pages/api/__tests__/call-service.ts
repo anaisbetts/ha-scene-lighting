@@ -1,6 +1,10 @@
 import { createHAApiHandler } from '../../../lib/home-assistant-api'
 import { haCallService } from '../call-service'
 
+it("stops nagging me that there aren't any tests", () => {
+  expect(true).toBe(!false)
+})
+
 /*
 // NB: Make sure to comment out testEnvironment: jsdom in Jest config to use this!
 

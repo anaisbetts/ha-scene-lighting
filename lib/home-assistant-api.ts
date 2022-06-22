@@ -81,13 +81,13 @@ export function AddStateToEntity(
 export async function getHAStates(api: Axios) {
   const ret = await api.get('/states')
 
-  return JSON.parse(ret.data) as HAState[]
+  return ret.data as HAState[]
 }
 
 export async function getHASceneDetails(scene: FriendlyEntity, api: Axios) {
   d(scene.internalId)
   const res = await api.get(`/config/scene/config/${scene.internalId}`)
-  return JSON.parse(res.data) as HASceneDetails
+  return res.data as HASceneDetails
 }
 
 export async function getSceneList(api: Axios) {
@@ -132,10 +132,10 @@ export async function getSceneList(api: Axios) {
 }
 
 export async function fetchLocalApi<T>(url: string): Promise<T> {
-  const api = new Axios()
+  const api = axios.create()
   const response = await api.get(url)
 
-  return JSON.parse(response.data) as T
+  return response.data as T
 }
 
 export interface CallServiceRequest {
@@ -151,7 +151,7 @@ export async function callService(
   entityId: string,
   data: Record<string, any>
 ) {
-  const api = new Axios({ baseURL: '/' })
+  const api = axios.create({ baseURL: '/' })
   const rqData: CallServiceRequest = {
     domain,
     service,
