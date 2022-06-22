@@ -1,4 +1,4 @@
-import { Axios } from 'axios'
+import axios, { Axios } from 'axios'
 import { asyncMap } from './promise-extras'
 
 const d = require('debug')('ha-api')
@@ -40,6 +40,21 @@ export interface Scene extends FriendlyEntity {
   affects: Record<string, FriendlyStateEntity>
 }
 
+const [homeAssistantUrl, homeAssistantToken] = [
+  process.env.HA_BASE_URL!,
+  process.env.HA_TOKEN!,
+]
+
+export function createHAApiHandler(haUrl?: string, haToken?: string) {
+  return axios.create({
+    baseURL: `${haUrl ?? homeAssistantUrl}/api`,
+    headers: {
+      Authorization: `Bearer ${haToken ?? homeAssistantToken}`,
+      'Content-Type': 'application/json',
+    },
+  })
+}
+
 export function HAStateToFriendlyEntity(state: HAState): FriendlyEntity {
   const internalIdObj =
     'id' in state.attributes ? { internalId: state.attributes.id } : {}
@@ -66,16 +81,17 @@ export function AddStateToEntity(
 export async function getHAStates(api: Axios) {
   const ret = await api.get('/states')
 
-  return JSON.parse(ret.data) as HAState[]
+  return ret.data as HAState[]
 }
 
 export async function getHASceneDetails(scene: FriendlyEntity, api: Axios) {
   d(scene.internalId)
   const res = await api.get(`/config/scene/config/${scene.internalId}`)
-  return JSON.parse(res.data) as HASceneDetails
+  return res.data as HASceneDetails
 }
 
 export async function getSceneList(api: Axios) {
+  d('Getting scene list!!')
   const result = await getHAStates(api)
 
   const entityTable = result.reduce((acc, x) => {
@@ -96,7 +112,6 @@ export async function getSceneList(api: Axios) {
 
   return scenes.map((x) => {
     const affectsList: string[] = x.attributes.entity_id
-    const haScene = entityTable[x.entity_id]
 
     const ret: Scene = {
       entity: x.entity_id,
@@ -105,7 +120,7 @@ export async function getSceneList(api: Axios) {
       affects: affectsList.reduce((acc, id) => {
         acc[id] = AddStateToEntity(
           HAStateToFriendlyEntity(entityTable[id]),
-          sceneTable[x.entity_id]
+          sceneTable[x.entity_id].entities[id]
         )
 
         return acc
@@ -115,3 +130,38 @@ export async function getSceneList(api: Axios) {
     return ret
   })
 }
+
+export async function fetchLocalApi<T>(url: string): Promise<T> {
+  const api = axios.create()
+  const response = await api.get(url)
+
+  return response.data as T
+}
+
+export interface CallServiceRequest {
+  domain: string
+  service: string
+  entityId: string
+  data: Record<string, any>
+}
+
+export async function callService(
+  domain: string,
+  service: string,
+  entityId: string,
+  data: Record<string, any>
+) {
+  const api = axios.create({ baseURL: '/' })
+  const rqData: CallServiceRequest = {
+    domain,
+    service,
+    entityId,
+    data,
+  }
+
+  const response = await api.post('api/call-service', rqData)
+  return response.data
+}
+
+const wnd: any = globalThis
+wnd.callService = callService
