@@ -4,23 +4,38 @@ import '../api-helper'
 import {
   Scene,
   createHAApiHandler,
-  getSceneList,
   CallServiceRequest,
 } from '../../lib/home-assistant-api'
+import { Axios } from 'axios'
+
+export async function haCallService(
+  api: Axios,
+  requestData: CallServiceRequest
+) {
+  const { domain, service, entityId, data } = requestData
+
+  const haResp = await api.post(`/services/${domain}/${service}`, {
+    entity_id: entityId,
+    //data,
+    ...data,
+  })
+
+  if (haResp.status >= 400) {
+    throw new Error(`Failed service call with ${haResp.status}: ${haResp.data}`)
+  }
+
+  return haResp
+}
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Scene[]>
 ) {
   const api = createHAApiHandler()
-  const { domain, service, entityId, data } = JSON.parse(
-    req.body
-  ) as CallServiceRequest
-
-  const haResp = await api.post(`/services/${domain}/${service}`, {
-    entity_id: entityId,
-    ...data,
-  })
+  const haResp = await haCallService(
+    api,
+    JSON.parse(req.body) as CallServiceRequest
+  )
 
   res.status(haResp.status).end(haResp.data)
 }

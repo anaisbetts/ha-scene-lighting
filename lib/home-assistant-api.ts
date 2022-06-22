@@ -1,4 +1,4 @@
-import { Axios } from 'axios'
+import axios, { Axios } from 'axios'
 import { asyncMap } from './promise-extras'
 
 const d = require('debug')('ha-api')
@@ -46,7 +46,7 @@ const [homeAssistantUrl, homeAssistantToken] = [
 ]
 
 export function createHAApiHandler(haUrl?: string, haToken?: string) {
-  return new Axios({
+  return axios.create({
     baseURL: `${haUrl ?? homeAssistantUrl}/api`,
     headers: {
       Authorization: `Bearer ${haToken ?? homeAssistantToken}`,
