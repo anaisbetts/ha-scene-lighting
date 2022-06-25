@@ -1,4 +1,5 @@
 import axios, { Axios } from 'axios'
+import { distribute } from './math'
 import { asyncMap } from './promise-extras'
 
 const d = require('debug')('ha-api')
@@ -26,6 +27,17 @@ export interface HASceneDetails {
   entities: Record<string, HAAttributeList> // entity_id
 }
 
+export interface HAThinSensorReading {
+  state: string
+  last_changed: string
+}
+
+export interface HADetailedSensorReading extends HAThinSensorReading {
+  entity_id: string
+  attributes: HAAttributeList
+  last_updated: string
+}
+
 export interface FriendlyEntity {
   entity: string
   internalId?: string
@@ -34,6 +46,11 @@ export interface FriendlyEntity {
 
 export interface FriendlyStateEntity extends FriendlyEntity {
   state: HAAttributeList
+}
+
+export interface FriendlyStateHistoryEntity extends FriendlyEntity {
+  attributes: HAAttributeList
+  history: HAThinSensorReading[]
 }
 
 export interface Scene extends FriendlyEntity {
@@ -129,6 +146,49 @@ export async function getSceneList(api: Axios) {
 
     return ret
   })
+}
+
+export async function getHASensorDetails(
+  entityIds: string[],
+  api: Axios
+): Promise<Array<HADetailedSensorReading | HAThinSensorReading>[]> {
+  const result = await api.get(
+    `/history/period?minimal_response&filter_entity_id=${entityIds.join(',')}`
+  )
+
+  return result.data as Array<HADetailedSensorReading | HAThinSensorReading>[]
+}
+
+export async function getSensorData(api: Axios) {
+  d('Getting sensor list!')
+  const result = await getHAStates(api)
+
+  const sensors = result.filter((x) => x.entity_id.startsWith('sensor.'))
+  const sensorMap = await asyncMap(
+    distribute(sensors, sensors.length % 32),
+    (xs) =>
+      getHASensorDetails(
+        xs.map((x) => x.entity_id),
+        api
+      )
+  )
+
+  return Array.from(sensorMap.values()).reduce((acc, sensors) => {
+    // NB: The raw data from this API is a bit Weird. It's an array of sensor
+    // readings, but the first sensor reading has the entity information
+    sensors.forEach((s) => {
+      const first = s[0] as HADetailedSensorReading
+
+      acc[first.entity_id] = {
+        entity: first.entity_id,
+        name: first.attributes['friendly_name'] || first.entity_id,
+        attributes: first.attributes,
+        history: s,
+      }
+    })
+
+    return acc
+  }, {} as Record<string, FriendlyStateHistoryEntity>)
 }
 
 export async function fetchLocalApi<T>(url: string): Promise<T> {
