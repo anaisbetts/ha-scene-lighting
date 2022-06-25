@@ -1,4 +1,6 @@
+import { useMemo, useRef, useState } from 'react'
 import { NextPage } from 'next'
+import { Subject, throttleTime } from 'rxjs'
 
 import ListBox from '../components/list-box'
 import Shell from '../components/shell'
@@ -9,8 +11,6 @@ import {
   getSceneList,
   Scene,
 } from '../lib/home-assistant-api'
-import { Subject, throttleTime } from 'rxjs'
-import { useMemo, useRef, useState } from 'react'
 import { useObservable, usePromise } from '../lib/actions/promise'
 import { applySceneTransition, lerpScene } from '../lib/scene-lerp'
 import { clamp } from '../lib/math'
@@ -65,6 +65,7 @@ const LerpTest: NextPage<LerpTestProps> = ({ initialSceneList }) => {
     const to = scene[toIdx]
 
     return lerpScene(from, to, clamp(0, val.ok()! / 100, 1))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fromIdx, toIdx, val, val.ok(), scene])
 
   usePromise(async () => {

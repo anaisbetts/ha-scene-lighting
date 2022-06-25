@@ -17,7 +17,7 @@ export function lerpState(from: string, to: string, t: number) {
 
 const defaultNumber = 0.0
 
-function fillArray(len: number, n: number) {
+export function fillArray(len: number, n: number) {
   return Array.from({ length: len }, () => n)
 }
 
@@ -59,4 +59,14 @@ export function lerp(from: any, to: any, t: number) {
   throw new Error(
     `Failed to Lerp: ${JSON.stringify(from)} => ${JSON.stringify(to)}`
   )
+}
+
+export function distribute<T>(arr: T[], bucketSize: number): Array<T[]> {
+  return arr.reduce((acc, x, n) => {
+    const bucket = n % bucketSize
+    acc[bucket] = acc[bucket] || []
+    acc[bucket].push(x)
+
+    return acc
+  }, [] as Array<T[]>)
 }
