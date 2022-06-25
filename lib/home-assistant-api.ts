@@ -164,13 +164,11 @@ export async function getSensorData(api: Axios) {
   const result = await getHAStates(api)
 
   const sensors = result.filter((x) => x.entity_id.startsWith('sensor.'))
-  const sensorMap = await asyncMap(
-    distribute(sensors, sensors.length % 32),
-    (xs) =>
-      getHASensorDetails(
-        xs.map((x) => x.entity_id),
-        api
-      )
+  const sensorMap = await asyncMap(distribute(sensors, 32), (xs) =>
+    getHASensorDetails(
+      xs.map((x) => x.entity_id),
+      api
+    )
   )
 
   return Array.from(sensorMap.values()).reduce((acc, sensors) => {
@@ -224,4 +222,4 @@ export async function callService(
 }
 
 const wnd: any = globalThis
-wnd.callService = callService
+wnd.fetchLocalApi = fetchLocalApi
