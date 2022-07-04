@@ -1,6 +1,13 @@
 import axios, { Axios } from 'axios'
 import { distribute } from './math'
 import { asyncMap } from './promise-extras'
+import {
+  AddStateToEntity,
+  FriendlyEntity,
+  FriendlyStateEntity,
+  FriendlyStateHistoryEntity,
+  Scene,
+} from './shared-types'
 
 const d = require('debug')('ha-api')
 
@@ -38,25 +45,6 @@ export interface HADetailedSensorReading extends HAThinSensorReading {
   last_updated: string
 }
 
-export interface FriendlyEntity {
-  entity: string
-  internalId?: string
-  name: string
-}
-
-export interface FriendlyStateEntity extends FriendlyEntity {
-  state: HAAttributeList
-}
-
-export interface FriendlyStateHistoryEntity extends FriendlyEntity {
-  attributes: HAAttributeList
-  history: HAThinSensorReading[]
-}
-
-export interface Scene extends FriendlyEntity {
-  affects: Record<string, FriendlyStateEntity>
-}
-
 const [homeAssistantUrl, homeAssistantToken] = [
   process.env.HA_BASE_URL!,
   process.env.HA_TOKEN!,
@@ -82,16 +70,6 @@ export function HAStateToFriendlyEntity(state: HAState): FriendlyEntity {
     entity: state.entity_id,
     name: state.attributes.friendly_name || state.entity_id,
     ...internalIdObj,
-  }
-}
-
-export function AddStateToEntity(
-  entry: FriendlyEntity,
-  state: HAAttributeList
-): FriendlyStateEntity {
-  return {
-    ...entry,
-    state,
   }
 }
 
@@ -200,38 +178,3 @@ export async function getSensorData(api: Axios) {
     {} as Record<string, FriendlyStateHistoryEntity>
   )
 }
-
-export async function fetchLocalApi<T>(url: string): Promise<T> {
-  const api = axios.create()
-  const response = await api.get(url)
-
-  return response.data as T
-}
-
-export interface CallServiceRequest {
-  domain: string
-  service: string
-  entityId: string
-  data: Record<string, any>
-}
-
-export async function callService(
-  domain: string,
-  service: string,
-  entityId: string,
-  data: Record<string, any>
-) {
-  const api = axios.create({ baseURL: '/' })
-  const rqData: CallServiceRequest = {
-    domain,
-    service,
-    entityId,
-    data,
-  }
-
-  const response = await api.post('api/call-service', rqData)
-  return response.data
-}
-
-const wnd: any = globalThis
-wnd.fetchLocalApi = fetchLocalApi

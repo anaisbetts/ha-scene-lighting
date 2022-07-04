@@ -1,12 +1,7 @@
-import { RenderStrategy } from '@headlessui/react/dist/utils/render'
-import {
-  callService,
-  FriendlyStateEntity,
-  HAAttributeList,
-  Scene,
-} from './home-assistant-api'
+import { callService } from './api-client'
 import { defaultValueFromExample, lerp } from './math'
 import { asyncMap } from './promise-extras'
+import { AttributeList, FriendlyStateEntity, Scene } from './shared-types'
 
 //const d = require('debug')('scene-lerp')
 const d = console.log.bind(console)
@@ -72,7 +67,7 @@ export function lerpEntity(
 
     acc[k] = lerp(from.state[k], to.state[k], t)
     return acc
-  }, {} as HAAttributeList)
+  }, {} as AttributeList)
 
   // NB: If we somehow transition from a color temp setting <=> an RGB
   // setting, we need to make sure we don't try to set both. If we do,
@@ -115,13 +110,13 @@ const ignoredStateKeys = ['state'].reduce(
   {} as Record<string, boolean>
 )
 
-function filterIgnoredStateKeys(state: HAAttributeList) {
+function filterIgnoredStateKeys(state: AttributeList) {
   return Object.keys(state).reduce((acc, k) => {
     if (ignoredStateKeys[k]) return acc
 
     acc[k] = state[k]
     return acc
-  }, {} as HAAttributeList)
+  }, {} as AttributeList)
 }
 
 export async function applySceneTransition(

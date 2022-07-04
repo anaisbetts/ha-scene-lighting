@@ -1,12 +1,10 @@
 import { NextApiRequest, NextApiResponse } from 'next'
-import '../../lib/api-helper'
+import '../../lib/api/api-helper'
 
-import {
-  Scene,
-  createHAApiHandler,
-  CallServiceRequest,
-} from '../../lib/home-assistant-api'
+import { createHAApiHandler } from '../../lib/home-assistant-api'
 import { Axios } from 'axios'
+import { CallServiceRequest } from '../../lib/api-client'
+import { Scene } from '../../lib/shared-types'
 
 export async function haCallService(
   api: Axios,
@@ -16,12 +14,8 @@ export async function haCallService(
 
   const body = {
     entity_id: entityId,
-    //data,
     ...data,
   }
-  console.log(
-    `FOR REAL CALLING SERVICE ${domain}.${service}: ${JSON.stringify(body)}`
-  )
   const haResp = await api.post(`/services/${domain}/${service}`, body)
 
   if (haResp.status >= 400) {

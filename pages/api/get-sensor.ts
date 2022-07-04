@@ -1,11 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import '../../lib/api-helper'
+import '../../lib/api/api-helper'
 
-import {
-  createHAApiHandler,
-  FriendlyStateHistoryEntity,
-  getSensorData,
-} from '../../lib/home-assistant-api'
+import { createHAApiHandler, getSensorData } from '../../lib/home-assistant-api'
+import { FriendlyStateHistoryEntity } from '../../lib/shared-types'
 
 export default async function handler(
   _req: NextApiRequest,

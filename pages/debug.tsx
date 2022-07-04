@@ -2,13 +2,6 @@ import { useMemo, useRef, useState } from 'react'
 import { NextPage } from 'next'
 
 import Shell from '../components/shell'
-import {
-  createHAApiHandler,
-  fetchLocalApi,
-  FriendlyStateHistoryEntity,
-  getSceneList,
-  Scene,
-} from '../lib/home-assistant-api'
 import { Subject, throttleTime } from 'rxjs'
 import { useCommand, useObservable, usePromise } from '@anaisbetts/commands'
 import { clamp } from '../lib/math'
@@ -16,6 +9,9 @@ import { lerpScene, applySceneTransition } from '../lib/scene-lerp'
 import { SensorGraph } from '../components/sensor-graph'
 import { SensorListBox } from '../components/sensor-list'
 import { SceneListBox } from '../components/scene-list'
+import { fetchLocalApi } from '../lib/api-client'
+import { createHAApiHandler, getSceneList } from '../lib/home-assistant-api'
+import { FriendlyStateHistoryEntity, Scene } from '../lib/shared-types'
 
 /*
  * Graph Test
@@ -131,6 +127,8 @@ const DebugPage: NextPage<DebugPageProps> = ({ initialSceneList }) => {
 }
 
 DebugPage.getInitialProps = async () => {
+  // NB: Because this method is guaranteed to be run server-side, we can make
+  // web calls that we could not do otherwise!
   const api = createHAApiHandler(
     process.env.HA_BASE_URL!,
     process.env.HA_TOKEN!
