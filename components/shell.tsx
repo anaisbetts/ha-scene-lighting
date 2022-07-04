@@ -1,9 +1,15 @@
 import { PropsWithChildren } from 'react'
-import { Disclosure, Menu, Transition } from '@headlessui/react'
 
-export interface ShellProps {}
+export interface ShellProps {
+  title?: string | JSX.Element
+}
 
-export default function Shell({ children }: PropsWithChildren<ShellProps>) {
+export default function Shell({
+  children,
+  title,
+}: PropsWithChildren<ShellProps>) {
+  const titleContent = title ?? 'Scene-based Lighting for Home Assistant'
+
   return (
     <>
       <div
@@ -12,9 +18,7 @@ export default function Shell({ children }: PropsWithChildren<ShellProps>) {
       >
         <header className="bg-yellow-400 text-gray-700 py-4">
           <div className="px-4 sm:px-6 lg:px-8">
-            <h1 className="text-3xl font-bold leading-tight">
-              Scene-based Lighting for Home Assistant
-            </h1>
+            <h1 className="text-3xl font-bold leading-tight">{titleContent}</h1>
           </div>
         </header>
 
