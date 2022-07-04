@@ -9,13 +9,13 @@ import {
   getSceneList,
   Scene,
 } from '../lib/home-assistant-api'
-import ListBox from '../components/list-box'
 import { Subject, throttleTime } from 'rxjs'
 import { useCommand, useObservable, usePromise } from '@anaisbetts/commands'
 import { clamp } from '../lib/math'
 import { lerpScene, applySceneTransition } from '../lib/scene-lerp'
 import { SensorGraph } from '../components/sensor-graph'
 import { SensorListBox } from '../components/sensor-list'
+import { SceneListBox } from '../components/scene-list'
 
 /*
  * Graph Test
@@ -56,31 +56,14 @@ function GraphTestSection() {
  * Lerp Test
  */
 
-function SceneTile({ item }: { item: Scene }) {
-  const affectsList = Object.keys(item.affects).map((id, n) => (
-    <div key={n}>{id}</div>
-  ))
-
-  return (
-    <div
-      className="grid"
-      style={{ gridTemplateRows: 'auto auto', gridTemplateColumns: '1fr 1fr' }}
-    >
-      <span className="font-semibold row-span-2">{item.name}</span>
-      <span className="italic">Affects:</span>
-      <span className="py-1">{affectsList}</span>
-    </div>
-  )
-}
-
 interface LerpTestProps {
   initialSceneList: Scene[]
 }
 
 function LerpTestSection({ initialSceneList }: LerpTestProps) {
   const rangeSubj = useRef(new Subject<number>())
-  const [fromIdx, setFromIdx] = useState<number | undefined>()
-  const [toIdx, setToIdx] = useState<number | undefined>()
+  const [from, setFrom] = useState<Scene | undefined>()
+  const [to, setTo] = useState<Scene | undefined>()
 
   const [_reload, content] = useCommand(
     () => fetchLocalApi<Scene[]>('/api/get-scene'),
@@ -94,20 +77,13 @@ function LerpTestSection({ initialSceneList }: LerpTestProps) {
   const val = useObservable(() => rangeSubj.current.pipe(throttleTime(250)), [])
 
   const lerpedSceneInfo = useMemo(() => {
-    if (
-      fromIdx === undefined ||
-      toIdx === undefined ||
-      val.ok() === undefined
-    ) {
+    if (from === undefined || to === undefined || val.ok() === undefined) {
       return null
     }
 
-    const from = scene[fromIdx]
-    const to = scene[toIdx]
-
     return lerpScene(from, to, clamp(0, val.ok()! / 100, 1))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fromIdx, toIdx, val, val.ok(), scene])
+  }, [from, to, val, val.ok(), scene])
 
   usePromise(async () => {
     if (!lerpedSceneInfo) {
@@ -117,24 +93,18 @@ function LerpTestSection({ initialSceneList }: LerpTestProps) {
     await applySceneTransition(lerpedSceneInfo)
   }, [lerpedSceneInfo])
 
-  const sceneLbi = scene.map((x, n) => ({
-    id: n,
-    summary: x.name,
-    content: <SceneTile item={x} />,
-  }))
-
   return (
     <>
       <h2>Lerp Test</h2>
-      <ListBox items={sceneLbi} label="From" onItemSelect={setFromIdx} />
-      <ListBox items={sceneLbi} label="To" onItemSelect={setToIdx} />
+      <SceneListBox sceneList={scene} label="From" onSceneSelect={setFrom} />
+      <SceneListBox sceneList={scene} label="To" onSceneSelect={setTo} />
 
       <div>
         <input
           type="range"
           min="0"
           max="100"
-          disabled={fromIdx === undefined || toIdx === undefined}
+          disabled={from === undefined || to === undefined}
           onChange={(e) => rangeSubj.current.next(Number(e.target.value))}
         />
         <p>{val.ok()}</p>
