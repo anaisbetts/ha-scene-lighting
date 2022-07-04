@@ -1,5 +1,5 @@
 import { CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis } from 'recharts'
-import { FriendlyStateHistoryEntity } from '../lib/home-assistant-api'
+import { FriendlyStateHistoryEntity } from '../lib/shared-types'
 
 export interface SensorGraphProps {
   sensor: FriendlyStateHistoryEntity

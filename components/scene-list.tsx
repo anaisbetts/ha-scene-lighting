@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { Scene } from '../lib/home-assistant-api'
+import { Scene } from '../lib/shared-types'
 import ListBox from './list-box'
 
 function SceneTile({ item }: { item: Scene }) {

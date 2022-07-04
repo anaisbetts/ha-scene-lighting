@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
+import { FriendlyStateHistoryEntity } from '../lib/shared-types'
 
-import { FriendlyStateHistoryEntity } from '../lib/home-assistant-api'
 import ListBox from './list-box'
 
 const nanRe = /NaN/
