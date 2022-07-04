@@ -1,11 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import '../../lib/api-helper'
+import '../../lib/api/api-helper'
 
-import {
-  getSceneList,
-  createHAApiHandler,
-  Scene,
-} from '../../lib/home-assistant-api'
+import { getSceneList, createHAApiHandler } from '../../lib/home-assistant-api'
+import { Scene } from '../../lib/shared-types'
 
 /*
 import {
