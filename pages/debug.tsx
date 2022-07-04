@@ -1,8 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import { NextPage } from 'next'
 
-import { CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis } from 'recharts'
-
 import Shell from '../components/shell'
 import {
   createHAApiHandler,
@@ -16,35 +14,15 @@ import { Subject, throttleTime } from 'rxjs'
 import { useCommand, useObservable, usePromise } from '@anaisbetts/commands'
 import { clamp } from '../lib/math'
 import { lerpScene, applySceneTransition } from '../lib/scene-lerp'
+import { SensorGraph } from '../components/sensor-graph'
+import { SensorListBox } from '../components/sensor-list'
 
 /*
  * Graph Test
  */
 
-const nanRe = /NaN/
-function SensorTile({ item }: { item: FriendlyStateHistoryEntity }) {
-  let examples = item.history
-    .slice(0, 5)
-    .map((x) => parseFloat(x.state))
-    .join(', ')
-
-  if (nanRe.test(examples)) {
-    examples = '(invalid data)'
-  }
-
-  return (
-    <div
-      className="grid"
-      style={{ gridTemplateRows: 'auto', gridTemplateColumns: '1fr 1fr' }}
-    >
-      <span className="font-semibold row-span-2">{item.name}</span>
-      <span className="italic">{examples}...</span>
-    </div>
-  )
-}
-
 function GraphTestSection() {
-  const [sensorIdx, setSensorIdx] = useState<number>()
+  const [sensor, setSensor] = useState<FriendlyStateHistoryEntity>()
   const [_loadSensors, data] = useCommand(
     () => fetchLocalApi<FriendlyStateHistoryEntity[]>('/api/get-sensor'),
     [],
@@ -52,36 +30,10 @@ function GraphTestSection() {
   )
 
   const graphContent = useMemo(() => {
-    if (sensorIdx === undefined) return null
+    if (!sensor) return null
 
-    const sensor = data.ok()![sensorIdx]
-    const last = Date.parse(
-      sensor.history[sensor.history.length - 1].last_changed
-    )
-    const plotData = sensor.history.map(({ state, last_changed }) => ({
-      x: Date.parse(last_changed) - last,
-      y: parseFloat(state),
-    }))
-
-    const tf = (n: number) => {
-      const h = n / 1000 / 60 / 60
-      if (Math.abs(h) < 0.01) {
-        return 'Now'
-      }
-
-      return `${h.toFixed(1)}h`
-    }
-
-    return (
-      <LineChart width={640} height={300} data={plotData}>
-        <Line type="monotone" dataKey="y" stroke="#ff7300" />
-        <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-        <Tooltip labelFormatter={tf} />
-        <YAxis />
-        <XAxis dataKey="x" tickFormatter={tf} />
-      </LineChart>
-    )
-  }, [sensorIdx, data])
+    return <SensorGraph sensor={sensor} />
+  }, [sensor])
 
   if (data.isPending() || !data.ok()) {
     return <p>Loading...</p>
@@ -91,19 +43,10 @@ function GraphTestSection() {
     return <p>Error: {data.err().toString()}</p>
   }
 
-  const sensorLbi = data
-    .ok()!
-    .map((x, n) => ({
-      id: n,
-      summary: x.name,
-      content: <SensorTile item={x} />,
-    }))
-    .sort((a, b) => a.summary.localeCompare(b.summary))
-
   return (
     <>
       <h2>Graph Test</h2>
-      <ListBox label="Sensors" items={sensorLbi} onItemSelect={setSensorIdx} />
+      <SensorListBox sensors={data.ok()!} onSensorSelect={setSensor} />
       <div>{graphContent}</div>
     </>
   )
