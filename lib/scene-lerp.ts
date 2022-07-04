@@ -6,6 +6,30 @@ import { AttributeList, FriendlyStateEntity, Scene } from './shared-types'
 //const d = require('debug')('scene-lerp')
 const d = console.log.bind(console)
 
+export interface InterpolationConfig {
+  type: 'SENSOR' | 'TIME'
+
+  fromSceneId: string
+  toSceneId: string
+
+  // From => To, expressed in milliseconds since midnight
+  dayTimeRangeOffset: [number, number]
+}
+
+export interface SensorInterpolationConfig extends InterpolationConfig {
+  type: 'SENSOR'
+  sensorId: string
+
+  // From => To, in whatever numbers the sensor natively supports
+  sensorValueRange: [number, number]
+}
+
+// NB: The Time interpolation config works by just being a "sensor" whose
+// values are the hours of the day.
+export interface TimeInterpolationConfig extends InterpolationConfig {
+  type: 'TIME'
+}
+
 // NB: Technically, we should actually care about this but it makes my code
 // like 100000x more complicated so I'm gonna try to ignore it as long as I
 // can. https://developers.home-assistant.io/docs/core/entity/light?_highlight=color&_highlight=mode#color-modes
