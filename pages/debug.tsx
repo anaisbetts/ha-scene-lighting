@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { NextPage } from 'next'
 
-import { CartesianGrid, Line, LineChart, Tooltip, YAxis } from 'recharts'
+import { CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis } from 'recharts'
 
 import Shell from '../components/shell'
 import {
@@ -55,18 +55,30 @@ function GraphTestSection() {
     if (sensorIdx === undefined) return null
 
     const sensor = data.ok()![sensorIdx]
-    const first = Date.parse(sensor.history[0].last_changed)
+    const last = Date.parse(
+      sensor.history[sensor.history.length - 1].last_changed
+    )
     const plotData = sensor.history.map(({ state, last_changed }) => ({
-      x: Date.parse(last_changed) - first,
+      x: Date.parse(last_changed) - last,
       y: parseFloat(state),
     }))
+
+    const tf = (n: number) => {
+      const h = n / 1000 / 60 / 60
+      if (Math.abs(h) < 0.01) {
+        return 'Now'
+      }
+
+      return `${h.toFixed(1)}h`
+    }
 
     return (
       <LineChart width={640} height={300} data={plotData}>
         <Line type="monotone" dataKey="y" stroke="#ff7300" />
         <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-        <Tooltip />
+        <Tooltip labelFormatter={tf} />
         <YAxis />
+        <XAxis dataKey="x" tickFormatter={tf} />
       </LineChart>
     )
   }, [sensorIdx, data])
@@ -79,11 +91,14 @@ function GraphTestSection() {
     return <p>Error: {data.err().toString()}</p>
   }
 
-  const sensorLbi = data.ok()!.map((x, n) => ({
-    id: n,
-    summary: x.name,
-    content: <SensorTile item={x} />,
-  }))
+  const sensorLbi = data
+    .ok()!
+    .map((x, n) => ({
+      id: n,
+      summary: x.name,
+      content: <SensorTile item={x} />,
+    }))
+    .sort((a, b) => a.summary.localeCompare(b.summary))
 
   return (
     <>
