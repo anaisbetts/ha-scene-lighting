@@ -65,7 +65,6 @@ const LerpTest: NextPage<LerpTestProps> = ({ initialSceneList }) => {
     const to = scene[toIdx]
 
     return lerpScene(from, to, clamp(0, val.ok()! / 100, 1))
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fromIdx, toIdx, val, val.ok(), scene])
 
   usePromise(async () => {

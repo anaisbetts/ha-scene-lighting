@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint && prettier --write **/*.{ts,tsx}",
+    "lint": "prettier --write **/*.{ts,tsx} && tsc && next lint",
     "test": "jest"
   },
   "dependencies": {
@@ -30,6 +30,7 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.0.1",
     "@types/debug": "^4.1.12",
+    "@types/jest": "^29.5.14",
     "@types/node": "22.10.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "18.3.1",

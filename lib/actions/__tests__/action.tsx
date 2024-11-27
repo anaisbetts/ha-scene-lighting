@@ -4,6 +4,7 @@ import { Subject, firstValueFrom, take } from 'rxjs'
 import { act, render, screen } from '@testing-library/react'
 import { unawaited } from '../utility'
 import { useAction } from '../action'
+import '@testing-library/jest-dom'
 
 describe('useAction', () => {
   let callCount = 0
