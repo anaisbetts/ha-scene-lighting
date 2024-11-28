@@ -1,4 +1,5 @@
 import { PropsWithChildren } from 'react'
+import '../styles/globals.css'
 
 export interface ShellProps {
   title?: string | JSX.Element
@@ -11,8 +12,8 @@ export default function Shell({
   const titleContent = title ?? 'Scene-based Lighting for Home Assistant'
 
   return (
-    <>
-      <div
+    <html lang="en">
+      <body
         className="min-h-screen grid gap-5"
         style={{ gridTemplateRows: 'auto minmax(300px, 1fr) auto' }}
       >
@@ -29,7 +30,7 @@ export default function Shell({
         <footer className="bg-yellow-400">
           <p>its an app</p>
         </footer>
-      </div>
-    </>
+      </body>
+    </html>
   )
 }

@@ -1,17 +1,16 @@
-import { useMemo, useRef, useState } from 'react'
-import { NextPage } from 'next'
+import { useMemo, useRef, useState } from "react"
+import { NextPage } from "next"
 
-import Shell from '../components/shell'
-import { Subject, throttleTime } from 'rxjs'
-import { useCommand, useObservable, usePromise } from '@anaisbetts/commands'
-import { clamp } from '../lib/math'
-import { lerpScene, applySceneTransition } from '../lib/scene-lerp'
-import { SensorGraph } from '../components/sensor-graph'
-import { SensorListBox } from '../components/sensor-list'
-import { SceneListBox } from '../components/scene-list'
-import { fetchLocalApi } from '../lib/api-client'
-import { createHAApiHandler, getSceneList } from '../lib/home-assistant-api'
-import { FriendlyStateHistoryEntity, Scene } from '../lib/shared-types'
+import { Subject, throttleTime } from "rxjs"
+import { useCommand, useObservable, usePromise } from "@anaisbetts/commands"
+import { clamp } from "../../lib/math"
+import { lerpScene, applySceneTransition } from "../../lib/scene-lerp"
+import { SensorGraph } from "../../components/sensor-graph"
+import { SensorListBox } from "../../components/sensor-list"
+import { SceneListBox } from "../../components/scene-list"
+import { fetchLocalApi } from "../../lib/api-client"
+import { createHAApiHandler, getSceneList } from "../../lib/home-assistant-api"
+import { FriendlyStateHistoryEntity, Scene } from "../../lib/shared-types"
 
 /*
  * Graph Test
@@ -20,9 +19,9 @@ import { FriendlyStateHistoryEntity, Scene } from '../lib/shared-types'
 function GraphTestSection() {
   const [sensor, setSensor] = useState<FriendlyStateHistoryEntity>()
   const [_loadSensors, data] = useCommand(
-    () => fetchLocalApi<FriendlyStateHistoryEntity[]>('/api/get-sensor'),
+    () => fetchLocalApi<FriendlyStateHistoryEntity[]>("/api/get-sensor"),
     [],
-    true
+    true,
   )
 
   const graphContent = useMemo(() => {
@@ -62,8 +61,8 @@ function LerpTestSection({ initialSceneList }: LerpTestProps) {
   const [to, setTo] = useState<Scene | undefined>()
 
   const [_reload, content] = useCommand(
-    () => fetchLocalApi<Scene[]>('/api/get-scene'),
-    []
+    () => fetchLocalApi<Scene[]>("/api/get-scene"),
+    [],
   )
 
   const scene = content.isOk()
@@ -119,10 +118,10 @@ interface DebugPageProps {
 
 const DebugPage: NextPage<DebugPageProps> = ({ initialSceneList }) => {
   return (
-    <Shell title="Debug Page">
+    <>
       <GraphTestSection />
       <LerpTestSection initialSceneList={initialSceneList} />
-    </Shell>
+    </>
   )
 }
 
@@ -131,7 +130,7 @@ DebugPage.getInitialProps = async () => {
   // web calls that we could not do otherwise!
   const api = createHAApiHandler(
     process.env.HA_BASE_URL!,
-    process.env.HA_TOKEN!
+    process.env.HA_TOKEN!,
   )
 
   return {
