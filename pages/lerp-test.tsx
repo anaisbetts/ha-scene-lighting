@@ -4,14 +4,13 @@ import { Subject, throttleTime } from 'rxjs'
 
 import ListBox from '../components/list-box'
 import Shell from '../components/shell'
-import { useAction } from '../lib/actions/action'
+import { useCommand, useObservable, usePromise } from '@anaisbetts/commands'
 import {
   createHAApiHandler,
   fetchLocalApi,
   getSceneList,
   Scene,
 } from '../lib/home-assistant-api'
-import { useObservable, usePromise } from '../lib/actions/promise'
 import { applySceneTransition, lerpScene } from '../lib/scene-lerp'
 import { clamp } from '../lib/math'
 
@@ -41,7 +40,7 @@ const LerpTest: NextPage<LerpTestProps> = ({ initialSceneList }) => {
   const [fromIdx, setFromIdx] = useState<number | undefined>()
   const [toIdx, setToIdx] = useState<number | undefined>()
 
-  const [_reload, content] = useAction(
+  const [_reload, content] = useCommand(
     () => fetchLocalApi<Scene[]>('/api/get-scene'),
     []
   )

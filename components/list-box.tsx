@@ -2,7 +2,7 @@ import { Fragment, useState } from 'react'
 import { Listbox, Transition } from '@headlessui/react'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid'
 
-import { cx } from '../lib/actions/utility'
+import { default as cx } from 'clsx'
 
 export interface ListBoxItem {
   id: number
