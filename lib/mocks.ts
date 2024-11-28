@@ -1,9 +1,8 @@
 import {
-  FriendlyStateEntity,
   HADetailedSensorReading,
   HAThinSensorReading,
-  Scene,
 } from './home-assistant-api'
+import { FriendlyStateEntity, Scene } from './shared-types'
 
 export const testOneFrom: FriendlyStateEntity = {
   entity: 'light.office_lamp_left',

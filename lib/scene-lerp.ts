@@ -1,15 +1,34 @@
-import { RenderStrategy } from '@headlessui/react/dist/utils/render'
-import {
-  callService,
-  FriendlyStateEntity,
-  HAAttributeList,
-  Scene,
-} from './home-assistant-api'
+import { callService } from './home-assistant-api'
 import { defaultValueFromExample, lerp } from './math'
 import { asyncMap } from './promise-extras'
+import { AttributeList, FriendlyStateEntity, Scene } from './shared-types'
 
 //const d = require('debug')('scene-lerp')
 const d = console.log.bind(console)
+
+export interface InterpolationConfig {
+  type: 'SENSOR' | 'TIME'
+
+  fromSceneId: string
+  toSceneId: string
+
+  // From => To, expressed in milliseconds since midnight
+  dayTimeRangeOffset: [number, number]
+}
+
+export interface SensorInterpolationConfig extends InterpolationConfig {
+  type: 'SENSOR'
+  sensorId: string
+
+  // From => To, in whatever numbers the sensor natively supports
+  sensorValueRange: [number, number]
+}
+
+// NB: The Time interpolation config works by just being a "sensor" whose
+// values are the hours of the day.
+export interface TimeInterpolationConfig extends InterpolationConfig {
+  type: 'TIME'
+}
 
 // NB: Technically, we should actually care about this but it makes my code
 // like 100000x more complicated so I'm gonna try to ignore it as long as I
@@ -72,7 +91,7 @@ export function lerpEntity(
 
     acc[k] = lerp(from.state[k], to.state[k], t)
     return acc
-  }, {} as HAAttributeList)
+  }, {} as AttributeList)
 
   // NB: If we somehow transition from a color temp setting <=> an RGB
   // setting, we need to make sure we don't try to set both. If we do,
@@ -115,13 +134,13 @@ const ignoredStateKeys = ['state'].reduce(
   {} as Record<string, boolean>
 )
 
-function filterIgnoredStateKeys(state: HAAttributeList) {
+function filterIgnoredStateKeys(state: AttributeList) {
   return Object.keys(state).reduce((acc, k) => {
     if (ignoredStateKeys[k]) return acc
 
     acc[k] = state[k]
     return acc
-  }, {} as HAAttributeList)
+  }, {} as AttributeList)
 }
 
 export async function applySceneTransition(
