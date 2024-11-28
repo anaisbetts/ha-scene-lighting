@@ -6,7 +6,7 @@ import {
   fetchLocalApi,
   FriendlyStateHistoryEntity,
 } from '../lib/home-assistant-api'
-import { useAction } from '../lib/actions/action'
+import { useCommand } from '@anaisbetts/commands'
 import ListBox from '../components/list-box'
 import { useMemo, useState } from 'react'
 import { CartesianGrid, Line, LineChart, Tooltip, YAxis } from 'recharts'
@@ -35,7 +35,7 @@ function SensorTile({ item }: { item: FriendlyStateHistoryEntity }) {
 
 const GraphTest: NextPage = () => {
   const [sensorIdx, setSensorIdx] = useState<number>()
-  const [_loadSensors, data] = useAction(
+  const [_loadSensors, data] = useCommand(
     () => fetchLocalApi<FriendlyStateHistoryEntity[]>('/api/get-sensor'),
     [],
     true
