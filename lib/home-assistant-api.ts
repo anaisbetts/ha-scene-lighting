@@ -1,15 +1,19 @@
-import axios, { Axios } from 'axios'
-import { distribute } from './math'
-import { asyncMap } from './promise-extras'
+"use server"
+
+import axios from "axios"
+import { distribute } from "./math"
+import { asyncMap } from "./promise-extras"
 import {
   AddStateToEntity,
   FriendlyEntity,
   FriendlyStateEntity,
   FriendlyStateHistoryEntity,
   Scene,
-} from './shared-types'
+} from "./shared-types"
+import { format } from "date-fns"
+import { escape } from "querystring"
 
-const d = require('debug')('ha-api')
+const d = require("debug")("ha-api")
 
 export type HAAttributeList = Record<string, any>
 
@@ -50,19 +54,22 @@ const [homeAssistantUrl, homeAssistantToken] = [
   process.env.HA_TOKEN!,
 ]
 
-export function createHAApiHandler(haUrl?: string, haToken?: string) {
+function createHAApiHandler(haUrl?: string, haToken?: string) {
+  const token = haToken ?? homeAssistantToken
+  d(`Token: ${token}`)
+
   return axios.create({
     baseURL: `${haUrl ?? homeAssistantUrl}/api`,
     headers: {
-      Authorization: `Bearer ${haToken ?? homeAssistantToken}`,
-      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
     },
   })
 }
 
-export function HAStateToFriendlyEntity(state: HAState): FriendlyEntity {
+function HAStateToFriendlyEntity(state: HAState): FriendlyEntity {
   const internalIdObj =
-    'id' in state.attributes ? { internalId: state.attributes.id } : {}
+    "id" in state.attributes ? { internalId: state.attributes.id } : {}
 
   d(`${state.entity_id} => ${state.attributes.id}`)
   d(JSON.stringify(internalIdObj))
@@ -73,34 +80,37 @@ export function HAStateToFriendlyEntity(state: HAState): FriendlyEntity {
   }
 }
 
-export async function getHAStates(api: Axios) {
-  const ret = await api.get('/states')
+export async function getHAStates() {
+  const api = createHAApiHandler()
+  d(`API URL: ${api.defaults.baseURL}`)
+  const ret = await api.get("/states")
 
   return ret.data as HAState[]
 }
 
-export async function getHASceneDetails(scene: FriendlyEntity, api: Axios) {
+export async function getHASceneDetails(scene: FriendlyEntity) {
   d(scene.internalId)
+  const api = createHAApiHandler()
   const res = await api.get(`/config/scene/config/${scene.internalId}`)
   return res.data as HASceneDetails
 }
 
-export async function getSceneList(api: Axios) {
-  d('Getting scene list!!')
-  const result = await getHAStates(api)
+export async function getSceneList() {
+  d("Getting scene list!!")
+  const result = await getHAStates()
 
   const entityTable = result.reduce(
     (acc, x) => {
       acc[x.entity_id] = x
       return acc
     },
-    {} as Record<string, HAState>
+    {} as Record<string, HAState>,
   )
 
-  const scenes = result.filter((x) => x.entity_id.startsWith('scene.'))
+  const scenes = result.filter((x) => x.entity_id.startsWith("scene."))
 
   const sceneMap = await asyncMap(scenes, (x) =>
-    getHASceneDetails(HAStateToFriendlyEntity(x), api)
+    getHASceneDetails(HAStateToFriendlyEntity(x)),
   )
 
   const sceneTable = Array.from(sceneMap.keys()).reduce(
@@ -108,7 +118,7 @@ export async function getSceneList(api: Axios) {
       acc[k.entity_id] = sceneMap.get(k)!
       return acc
     },
-    {} as Record<string, HASceneDetails>
+    {} as Record<string, HASceneDetails>,
   )
 
   return scenes.map((x) => {
@@ -122,12 +132,12 @@ export async function getSceneList(api: Axios) {
         (acc, id) => {
           acc[id] = AddStateToEntity(
             HAStateToFriendlyEntity(entityTable[id]),
-            sceneTable[x.entity_id].entities[id]
+            sceneTable[x.entity_id].entities[id],
           )
 
           return acc
         },
-        {} as Record<string, FriendlyStateEntity>
+        {} as Record<string, FriendlyStateEntity>,
       ),
     }
 
@@ -135,27 +145,37 @@ export async function getSceneList(api: Axios) {
   })
 }
 
+const haDateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+
 export async function getHASensorDetails(
   entityIds: string[],
-  api: Axios
+  since?: Date,
 ): Promise<Array<HADetailedSensorReading | HAThinSensorReading>[]> {
+  let sinceUrlPart = ""
+
+  if (since) {
+    const formattedSince = format(since, haDateFormat)
+    sinceUrlPart = "/" + escape(`${formattedSince}`)
+  }
+
+  const end = escape(format(new Date(), haDateFormat))
+
+  const api = createHAApiHandler()
+  console.log(`Getting sensor details for ${entityIds.join(",")}`)
   const result = await api.get(
-    `/history/period?minimal_response&filter_entity_id=${entityIds.join(',')}`
+    `/history/period${sinceUrlPart}?minimal_response&end_time=${end}&filter_entity_id=${entityIds.join(",")}`,
   )
 
   return result.data as Array<HADetailedSensorReading | HAThinSensorReading>[]
 }
 
-export async function getSensorData(api: Axios) {
-  d('Getting sensor list!')
-  const result = await getHAStates(api)
+export async function getSensorData() {
+  d("Getting sensor list!")
+  const result = await getHAStates()
 
-  const sensors = result.filter((x) => x.entity_id.startsWith('sensor.'))
+  const sensors = result.filter((x) => x.entity_id.startsWith("sensor."))
   const sensorMap = await asyncMap(distribute(sensors, 32), (xs) =>
-    getHASensorDetails(
-      xs.map((x) => x.entity_id),
-      api
-    )
+    getHASensorDetails(xs.map((x) => x.entity_id)),
   )
 
   return Array.from(sensorMap.values()).reduce(
@@ -167,7 +187,7 @@ export async function getSensorData(api: Axios) {
 
         acc[first.entity_id] = {
           entity: first.entity_id,
-          name: first.attributes['friendly_name'] || first.entity_id,
+          name: first.attributes["friendly_name"] || first.entity_id,
           attributes: first.attributes,
           history: s,
         }
@@ -175,6 +195,38 @@ export async function getSensorData(api: Axios) {
 
       return acc
     },
-    {} as Record<string, FriendlyStateHistoryEntity>
+    {} as Record<string, FriendlyStateHistoryEntity>,
   )
+}
+
+export interface CallServiceRequest {
+  domain: string
+  service: string
+  entityId: string
+  data: Record<string, any>
+}
+
+export async function callService(
+  domain: string,
+  service: string,
+  entityId: string,
+  data: Record<string, any>
+) {
+  const api = createHAApiHandler()
+
+  const body = {
+    entity_id: entityId,
+    //data,
+    ...data,
+  }
+  console.log(
+    `FOR REAL CALLING SERVICE ${domain}.${service}: ${JSON.stringify(body)}`,
+  )
+  const haResp = await api.post(`/services/${domain}/${service}`, body)
+
+  if (haResp.status >= 400) {
+    throw new Error(`Failed service call with ${haResp.status}: ${haResp.data}`)
+  }
+
+  return haResp
 }

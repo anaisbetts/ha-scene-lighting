@@ -1,4 +1,4 @@
-import { callService } from './api-client'
+import { callService } from './home-assistant-api'
 import { defaultValueFromExample, lerp } from './math'
 import { asyncMap } from './promise-extras'
 import { AttributeList, FriendlyStateEntity, Scene } from './shared-types'
