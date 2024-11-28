@@ -1,10 +1,10 @@
-import { getHASensorDetails, getSceneList } from "../../lib/home-assistant-api"
+import { getHAEntityDetails, getSceneList } from "../../lib/home-assistant-api"
 import { GraphTestSection, LerpTestSection } from "../../components/debug"
 import { sub } from "date-fns";
 
 async function getRangeForSensor(sensor: string) {
   const since = sub(new Date(), { days: 3 });
-  const sensorHistory = await getHASensorDetails([sensor], since);
+  const sensorHistory = await getHAEntityDetails([sensor], since);
   const tenPct = Math.floor(sensorHistory[0].length * 0.2)
 
   const values = sensorHistory[0].map((x) => Number.parseFloat(x.state)).sort((a,b) => a-b).splice(tenPct, sensorHistory[0].length - tenPct*2)

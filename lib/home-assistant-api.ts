@@ -147,7 +147,7 @@ export async function getSceneList() {
 
 const haDateFormat = "yyyy-MM-dd'T'HH:mm:ss"
 
-export async function getHASensorDetails(
+export async function getHAEntityDetails(
   entityIds: string[],
   since?: Date,
 ): Promise<Array<HADetailedSensorReading | HAThinSensorReading>[]> {
@@ -175,7 +175,7 @@ export async function getSensorData() {
 
   const sensors = result.filter((x) => x.entity_id.startsWith("sensor."))
   const sensorMap = await asyncMap(distribute(sensors, 32), (xs) =>
-    getHASensorDetails(xs.map((x) => x.entity_id)),
+    getHAEntityDetails(xs.map((x) => x.entity_id)),
   )
 
   return Array.from(sensorMap.values()).reduce(
