@@ -1,5 +1,14 @@
 import { PropsWithChildren } from 'react'
+import { Metadata } from 'next'
 import '../styles/globals.css'
+
+export const metadata: Metadata = {
+  title: 'Scene-based Lighting for Home Assistant',
+  description: 'Control your Home Assistant lighting scenes',
+  icons: {
+    icon: '/favicon.ico',
+  },
+}
 
 export interface ShellProps {
   title?: string | JSX.Element
@@ -14,7 +23,7 @@ export default function Shell({
   return (
     <html lang="en">
       <body
-        className="min-h-screen grid gap-5"
+        className="min-h-screen grid"
         style={{ gridTemplateRows: 'auto minmax(300px, 1fr) auto' }}
       >
         <header className="bg-yellow-400 text-gray-700 py-4">
